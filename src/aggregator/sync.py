@@ -22,6 +22,7 @@ from urllib.parse import quote, quote_plus
 from dotenv import load_dotenv
 
 from aggregator.fetchers.base import Fetcher, FetchError
+from aggregator.fetchers.canvas_api import DEFAULT_BASE_URL, CanvasApiFetcher
 from aggregator.fetchers.canvas_ics import CanvasIcsFetcher
 from aggregator.fetchers.gradescope import GradescopeFetcher, parse_terms
 from aggregator.fetchers.manual import ManualFetcher
@@ -30,7 +31,7 @@ from aggregator.models import Assignment
 from aggregator.store import Previous, load_previous, to_dict, write_json_atomic
 
 KEEP_DAYS = 14  # keep assignments this long after their due date
-SECRET_ENV_VARS = ("CANVAS_ICS_URL", "GRADESCOPE_EMAIL", "GRADESCOPE_PASSWORD")
+SECRET_ENV_VARS = ("CANVAS_API_TOKEN", "CANVAS_ICS_URL", "GRADESCOPE_EMAIL", "GRADESCOPE_PASSWORD")
 
 Builder = Callable[[], Fetcher]
 _URL = re.compile(r"""https?://[^\s'"<>)]+""")
@@ -57,7 +58,19 @@ def _require(name: str) -> str:
 
 def default_builders(manual_path: str) -> dict[str, Builder]:
     def canvas() -> Fetcher:
-        return CanvasIcsFetcher(_require("CANVAS_ICS_URL"))
+        # The API (submission status) wins over the ICS feed when a token is set.
+        token = os.environ.get("CANVAS_API_TOKEN")
+        if token:
+            exclude = [x.strip() for x in os.environ.get("CANVAS_EXCLUDE_COURSES", "").split(",")]
+            return CanvasApiFetcher(
+                os.environ.get("CANVAS_BASE_URL") or DEFAULT_BASE_URL,
+                token,
+                exclude_course_ids=[x for x in exclude if x],
+            )
+        ics_url = os.environ.get("CANVAS_ICS_URL")
+        if ics_url:
+            return CanvasIcsFetcher(ics_url)
+        raise FetchError("Neither CANVAS_API_TOKEN nor CANVAS_ICS_URL is set")
 
     def gradescope() -> Fetcher:
         terms = os.environ.get("GRADESCOPE_TERMS")

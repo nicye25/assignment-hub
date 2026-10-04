@@ -1,10 +1,11 @@
 # DRAFT: not yet run on GitHub. Replaces the earlier skeleton sync.yml.
 #
 # Repo secrets needed:
-#   CANVAS_ICS_URL, GRADESCOPE_EMAIL, GRADESCOPE_PASSWORD
+#   CANVAS_API_TOKEN (or CANVAS_ICS_URL as a fallback), GRADESCOPE_EMAIL, GRADESCOPE_PASSWORD
 #   SITE_TOKEN   random string; the data is served from /<SITE_TOKEN>/ so the URL
 #                is not guessable (obscurity, not access control)
-# Optional repo variable: GRADESCOPE_TERMS (e.g. "Fall 2026")
+# Optional repo variables: GRADESCOPE_TERMS (e.g. "Fall 2026"), CANVAS_BASE_URL,
+#   CANVAS_EXCLUDE_COURSES (comma-separated course ids)
 # Settings -> Pages -> Source must be "GitHub Actions".
 
 name: sync
@@ -64,7 +65,10 @@ jobs:
         id: sync
         continue-on-error: true
         env:
-          CANVAS_ICS_URL: ${{ secrets.CANVAS_ICS_URL }}
+          CANVAS_API_TOKEN: ${{ secrets.CANVAS_API_TOKEN }}
+          CANVAS_BASE_URL: ${{ vars.CANVAS_BASE_URL }}
+          CANVAS_EXCLUDE_COURSES: ${{ vars.CANVAS_EXCLUDE_COURSES }}
+          CANVAS_ICS_URL: ${{ secrets.CANVAS_ICS_URL }}   # only used if no API token
           GRADESCOPE_EMAIL: ${{ secrets.GRADESCOPE_EMAIL }}
           GRADESCOPE_PASSWORD: ${{ secrets.GRADESCOPE_PASSWORD }}
           GRADESCOPE_TERMS: ${{ vars.GRADESCOPE_TERMS }}
