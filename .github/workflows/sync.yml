@@ -5,7 +5,7 @@
 #   SITE_TOKEN   random string; the data is served from /<SITE_TOKEN>/ so the URL
 #                is not guessable (obscurity, not access control)
 # Optional repo variables: GRADESCOPE_TERMS (e.g. "Fall 2026"), CANVAS_BASE_URL,
-#   CANVAS_EXCLUDE_COURSES (comma-separated course ids)
+#   CANVAS_EXCLUDE_COURSES (comma-separated course ids), CANVAS_TERMS (e.g. "Fall 2026")
 # Settings -> Pages -> Source must be "GitHub Actions".
 
 name: sync
@@ -59,6 +59,9 @@ jobs:
             -o "site/$SITE_TOKEN/assignments.json" \
             || echo "No previous output found; starting fresh"
 
+      - name: Add frontend
+        run: cp web/index.html "site/$SITE_TOKEN/index.html"
+
       # continue-on-error so a failed source still gets its stale data deployed;
       # the last step turns the run red afterwards.
       - name: Sync
@@ -68,6 +71,7 @@ jobs:
           CANVAS_API_TOKEN: ${{ secrets.CANVAS_API_TOKEN }}
           CANVAS_BASE_URL: ${{ vars.CANVAS_BASE_URL }}
           CANVAS_EXCLUDE_COURSES: ${{ vars.CANVAS_EXCLUDE_COURSES }}
+          CANVAS_TERMS: ${{ vars.CANVAS_TERMS }}
           CANVAS_ICS_URL: ${{ secrets.CANVAS_ICS_URL }}   # only used if no API token
           GRADESCOPE_EMAIL: ${{ secrets.GRADESCOPE_EMAIL }}
           GRADESCOPE_PASSWORD: ${{ secrets.GRADESCOPE_PASSWORD }}
