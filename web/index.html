@@ -20,8 +20,11 @@ h1{font:600 clamp(1.8rem,5vw,2.6rem)/1.15 var(--serif);margin:14px 0 6px;max-wid
 .bad-note{margin:20px 0 0;color:var(--bad);font-weight:600}
 #hero{margin-bottom:28px}
 .banner{border:1px solid var(--bad);color:var(--bad);border-radius:6px;padding:10px 14px;margin-bottom:8px;font-size:.9rem}
-h2{font:600 1.15rem var(--serif);margin:32px 0 4px}
+h2{font:600 1.15rem var(--serif);margin:0 0 4px}
 h2.bad{color:var(--bad)}h2.muted{color:var(--muted)}
+.zone{margin-top:36px}.zone:first-child{margin-top:0}
+.zone h2+.day{border-top:0}
+.zone.bad{padding:14px 16px 6px;border:1px solid color-mix(in srgb,var(--bad) 45%,transparent);border-radius:8px;background:color-mix(in srgb,var(--bad) 7%,transparent)}
 .day{display:grid;grid-template-columns:88px 1fr;gap:16px;padding:14px 0;border-top:1px solid var(--line)}
 .rail{display:flex;flex-direction:column}
 .num{font:600 2.1rem/1 var(--serif)}
@@ -130,11 +133,13 @@ function render() {
   const root = $("#list"); root.replaceChildren();
   const section = (title, cls, items) => {
     if (!items.length) return;
-    if (title) root.append(el("h2", cls, title));
-    for (const [d, g] of byDay(items)) root.append(dayRow(d, g, now));
+    const zone = el("div", "zone " + cls);
+    zone.append(el("h2", cls, title));
+    for (const [d, g] of byDay(items)) zone.append(dayRow(d, g, now));
+    root.append(zone);
   };
   section("Overdue", "bad", overdue);
-  section(null, "", upcoming);
+  section("Upcoming", "", upcoming);
   section("Recently completed", "muted", recent);
   if (!overdue.length && !upcoming.length && !recent.length)
     root.append(el("p", "empty", "Nothing to show. If this looks wrong, run the sync workflow."));

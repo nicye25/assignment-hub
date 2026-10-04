@@ -12,7 +12,7 @@ name: sync
 
 on:
   schedule:
-    - cron: "0 * * * *"   # hourly, UTC; GitHub may delay scheduled runs
+    - cron: "11,41 * * * *"   # hourly, UTC; GitHub may delay scheduled runs
   workflow_dispatch:      # adds a manual "Run workflow" button
 
 permissions:
